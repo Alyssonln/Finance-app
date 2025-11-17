@@ -1,0 +1,70 @@
+import { Transaction } from '@/entities/Transaction';
+import { createContext, ReactNode, useState } from 'react';
+
+const initialTransactions: Transaction[] = [
+   { id: '1', description: 'Supermercado', amount: -50.75, referenceDate: new Date('2025-11-05') },
+   { id: '2', description: 'Salario', amount: 2500.0, referenceDate: new Date('2025-11-06') },
+   { id: '3', description: 'Restaurante', amount: -120.4, referenceDate: new Date('2025-11-07') },
+   { id: '4', description: 'Aluguel', amount: -800.0, referenceDate: new Date('2025-11-08') },
+   {
+      id: '5',
+      description: 'Racao do cachorro',
+      amount: -199.99,
+      referenceDate: new Date('2025-11-09'),
+   },
+   { id: '6', description: 'Ida ao cinema', amount: -54.78, referenceDate: new Date('2025-11-10') },
+   { id: '7', description: 'Freela', amount: 1600.0, referenceDate: new Date('2025-11-11') },
+   {
+      id: '8',
+      description: 'Contas de luz',
+      amount: -252.91,
+      referenceDate: new Date('2025-11-12'),
+   },
+];
+
+type AddTransactionInput = {
+   description: string;
+   amount: number;
+   referenceDate?: Date;
+};
+
+type TransactionsContextProps = {
+   balance: number;
+   transactions: Transaction[];
+   addTransaction: (data: AddTransactionInput) => Transaction;
+   getLastTransactions: (limit: number) => Transaction[];
+};
+
+const TransactionsContext = createContext<TransactionsContextProps | null>(null);
+
+export { TransactionsContext };
+
+export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
+   const balance = 0;
+
+   const getLastTransactions = (limit = 5) => {
+      return [...transactions]
+         .sort((a, b) => b.referenceDate.getTime() - a.referenceDate.getTime())
+         .slice(0, limit);
+   };
+
+   const addTransaction = (data: AddTransactionInput) => {
+      const newTransaction: Transaction = {
+         id: Math.floor(Math.random() * 999999).toString(),
+         description: data.description,
+         amount: data.amount,
+         referenceDate: data.referenceDate ?? new Date(),
+      };
+      setTransactions((current) => [...current, newTransaction]);
+      return newTransaction;
+   };
+
+   return (
+      <TransactionsContext.Provider
+         value={{ balance, transactions, addTransaction, getLastTransactions }}
+      >
+         {children}
+      </TransactionsContext.Provider>
+   );
+};
